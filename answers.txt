@@ -1,0 +1,31 @@
+Q1. How many assertions did you find in each project?
+the number of extracted assertions were as follows: pytest had 4,287 assertions, django had 53,969, 
+and flask had 1,097. 
+These numbers reflect both native assert statements and assertion-like method calls such as self.assertEqual.
+
+
+Q2. What did you do to validate if the tool is correct?
+The tool was validated through a combination of manual inspection and behavioral pattern coverage. 
+For manual validation, several assertion entries from the output CSV were cross-referenced with their 
+source files and line numbers to ensure fidelity. Additionally, for pytest, the public repository itself 
+serves as a reliable reference because its tests are clearly written and assertion-heavy, making it a strong ground 
+truth for expected behavior. Furthermore, I verified that assertions embedded in test helpers 
+or mocks were captured correctly by inspecting transitive relationships through the call graph.
+
+
+Q3. What are the limitations? For example, does your tool miss assertions?
+First, runtime-generated assertions or tests constructed via metaprogramming are not detected. 
+Second, the call graph used for tracing transitive assertions is conservative and does not handle 
+dynamic dispatch or imported calls from external libraries. Lastly, any file that cannot be parsed due 
+to a syntax error—such as tests_syntax_error.py in Django—gets skipped entirely, as noted by the 
+tool’s warnings during execution. These limitations mean that while coverage is high, it is not complete.
+
+
+Q4. What were the key challenges that you faced in your implementation?
+One major challenge was constructing a reliable yet efficient call graph. Since functions can invoke helpers 
+that in turn perform assertions, I needed to resolve these chains transitively without causing infinite recursion 
+or performance issues. Another challenge was handling test method inheritance; I had to track class hierarchies 
+and inject base class functions into the child’s context manually. Additionally, accounting for assertion 
+variants across frameworks—like unittest.TestCase methods and pytest.raises or mocks—required writing pattern-specific logic. 
+Finally, the variability in project layouts made identifying test files non-trivial. 
+Patterns like tests/, */tests/, or *_test.py vary from project to project, so the search strategy had to be flexible and inclusive.
